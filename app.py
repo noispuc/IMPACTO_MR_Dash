@@ -9,12 +9,11 @@ microbiologia_df = microbiologia_processamento.get_dataframe()
 
 
 app_ui = ui.page_fluid (
-    microbiologia_ui.filtro_idade("elem1"),
-    microbiologia_ui.filtro_microrganismos("elem1", microganismos_dict),
-    ui.output_data_frame(id="head")) 
+    microbiologia_ui.microbiologia_ui(id="microbiologia", microrganismos_dict=microganismos_dict),
+    ) 
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    microbiologia_server.teste("elem1")
+    microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, microganismos_dict)
     
 app = App(app_ui, server)

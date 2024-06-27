@@ -2,14 +2,9 @@ from shiny import Inputs, Outputs, Session, module, render
 from processamento import microbiologia_processamento
 
 @module.server
-def teste(input: Inputs, output: Outputs, session: Session):
-    print("Chamado 1")
-
+def microbiologia_server(input: Inputs, output: Outputs, session: Session, microbiologia_df, microganismos_dict):
     @render.data_frame
-    def head():
-        print("Chamado")
-        microganismos_dict = []
-        microbiologia_df = []
+    def tabela_teste():
         microrganismos_df = microbiologia_processamento.frequencia_ident_isolados(microbiologia_df, input.slider_age()) 
         if (len(input.selectize()) > 0):
             micro_filtrados = []
@@ -19,7 +14,6 @@ def teste(input: Inputs, output: Outputs, session: Session):
             return render.DataGrid(organismos_filter_df)
         return render.DataGrid(microrganismos_df)
 
-    #@output
     #@render.data_frame
     #def head2():
         #return render.DataGrid(microbiologia_processamento.isolamento_bacterias_resistentes())

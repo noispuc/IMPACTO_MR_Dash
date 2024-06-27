@@ -1,17 +1,19 @@
 from shiny import ui, module
 
 @module.ui
-def filtro_idade():
+def microbiologia_ui(microrganismos_dict):
 
-    return ui.input_slider(
+    return ui.card(
+        
+        ui.input_slider(
         "slider_age", "Idade", min=0, 
-        max=120, value=[0, 120])
+        max=120, value=[0, 120]),
 
-@module.ui
-def filtro_microrganismos(microganismos_dict):
-    return ui.input_selectize(  
+        ui.input_selectize(  
         "selectize",  
         "Microrganismos",  
-        microganismos_dict,  
-        multiple=True,  
-    ) 
+        microrganismos_dict,  
+        multiple=True),
+
+        ui.output_data_frame(id="tabela_teste")
+    )
