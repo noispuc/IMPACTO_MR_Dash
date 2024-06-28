@@ -7,7 +7,7 @@ def microbiologia_ui(microrganismos_dict):
         
         ui.input_slider(
         "slider_age", "Idade", min=0, 
-        max=120, value=[0, 120]),
+        max=120, value=[0, 130]),
 
         ui.input_selectize(  
         "selectize",  
