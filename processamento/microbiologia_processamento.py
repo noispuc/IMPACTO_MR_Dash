@@ -9,7 +9,7 @@ def get_microrganismos_dict():
     microbiologia.drop_duplicates(inplace=True)
     microbiologia.rename(columns={'pathogen_type_name': 'Microrganismos',}, inplace=True)
     microbiologia.sort_values(by='Microrganismos', inplace=True)
-    return microbiologia.to_dict()
+    return microbiologia.to_dict()['Microrganismos']
 
 
 def add_perc(num):
@@ -25,11 +25,11 @@ def get_microbiologia_df(admissao):
                                     index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"],
                                     usecols=["id_paciente", "id_hosp_internacao", "id_uti_internacao",
                                               "infec_coleta_data", "pathogen_type_name"], parse_dates=["infec_coleta_data"])
-    admissao = admissao[["age", "hospital_code", "admission_reason_name"]]
+    admissao = admissao[["age", "hospital_code", "admission_reason_name", "mfi_points", "saps3points"]]
     return microbiologia.join(admissao)
 
 
-def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, motivos_selecionados, motivos_dict, microrganismos_selecionados, microganismos_dict, mfi_selecionados):
+def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, motivos_selecionados, motivos_dict, microrganismos_selecionados, microganismos_dict, mfi_selecionados, saps_selecionados):
     microbiologia = microbiologia.copy()
     microbiologia.reset_index(drop=True, inplace=True)
 
@@ -38,11 +38,32 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
     microbiologia = microbiologia[microbiologia['age'] <= age_range[1]]
 
     #Filtro MFI
-    #TODO
+    if (len(mfi_selecionados.get()) > 0):
+        if ('NF' not in mfi_selecionados.get()):
+            microbiologia = microbiologia[microbiologia['mfi_points'] != 0]
+        if ('PF' not in mfi_selecionados.get()):
+            microbiologia = microbiologia[~microbiologia['mfi_points'].isin([1, 2])]
+        if ('F' not in mfi_selecionados.get()):
+            microbiologia = microbiologia[microbiologia['mfi_points'] < 3]    
+
+    #Filtro SAPS
+    if (len(saps_selecionados.get()) > 0):
+        if ('0' not in saps_selecionados.get()):
+            microbiologia = microbiologia[microbiologia['saps3points'] >= 35]
+        if ('1' not in saps_selecionados.get()):
+            microbiologia = microbiologia[~((35 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 54))]
+        if ('2' not in saps_selecionados.get()):
+            microbiologia = microbiologia[~((55 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 74))]  
+        if ('3' not in saps_selecionados.get()):
+            microbiologia = microbiologia[~((75 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 95))] 
+        if ('4' not in saps_selecionados.get()):
+            microbiologia = microbiologia[microbiologia['saps3points'] < 95]
+    microbiologia.to_csv('out.csv', index=False)
 
     #Filtro de hospitais
     if (len(hospitais_selecionados.get()) > 0):
         microbiologia = microbiologia.loc[microbiologia['hospital_code'].isin(hospitais_selecionados.get())]
+
 
     #Filtro de motivo da admissão
     if (len(motivos_selecionados.get()) > 0):
@@ -54,7 +75,7 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
 
 
     #Retira as colunas de filtro
-    microbiologia.drop(columns=['age', 'hospital_code', 'admission_reason_name'], inplace=True)
+    microbiologia.drop(columns=['age', 'hospital_code', 'admission_reason_name', 'mfi_points', 'saps3points'], inplace=True)
 
 
     #Cria dataframes para cada período

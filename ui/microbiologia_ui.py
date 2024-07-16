@@ -2,10 +2,9 @@ from shiny import ui, module
 
 @module.ui
 def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict):
-
     return ui.card(
         ui.row(
-
+        
         ui.input_selectize(  
         "selectize_microrganismos_microbiologia",  
         "Microrganismo",  
@@ -28,6 +27,12 @@ def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict):
         "selectize_MFI_microbiologia",  
         "MFI",  
         {"NF": "Non-Frail", "PF": "Pre-Frail", "F": "Frail"},
+        multiple=True),
+
+        ui.input_selectize(  
+        "selectize_SAPS_microbiologia",  
+        "SAPS",  
+        {0: "0-34", 1: "35-54", 2: "55-74", 3: "75-95", 4: ">95"},
         multiple=True)  
 
         ),
