@@ -28,7 +28,8 @@ def get_microbiologia_df(admissao):
     admissao = admissao[["age", "hospital_code", "admission_reason_name"]]
     return microbiologia.join(admissao)
 
-def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados):
+
+def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, motivos_selecionados, motivos_dict, microrganismos_selecionados, microganismos_dict, mfi_selecionados):
     microbiologia = microbiologia.copy()
     microbiologia.reset_index(drop=True, inplace=True)
 
@@ -36,12 +37,27 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados):
     microbiologia = microbiologia[microbiologia['age'] >= age_range[0]]
     microbiologia = microbiologia[microbiologia['age'] <= age_range[1]]
 
+    #Filtro MFI
+    #TODO
+
     #Filtro de hospitais
     if (len(hospitais_selecionados.get()) > 0):
         microbiologia = microbiologia.loc[microbiologia['hospital_code'].isin(hospitais_selecionados.get())]
 
+    #Filtro de motivo da admissão
+    if (len(motivos_selecionados.get()) > 0):
+        motivos_lista = []
+        for val in motivos_selecionados.get():
+            motivos_lista.append(motivos_dict[int(val)])
+        print(motivos_lista)
+        microbiologia = microbiologia.loc[microbiologia['admission_reason_name'].isin(motivos_lista)]
 
+
+    #Retira as colunas de filtro
     microbiologia.drop(columns=['age', 'hospital_code', 'admission_reason_name'], inplace=True)
+
+
+    #Cria dataframes para cada período
     datas = [3, 6, 12, 36, 72]
     dataframes = []
     for nDias in range(len(datas)):
@@ -59,18 +75,27 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados):
     for i in range(1, len(dataframes)):
         resultado = pandas.merge(resultado, dataframes[i], how='outer', on='Microrganismo')
 
+    #Adiciona a %
     resultado.reset_index(drop=False, inplace=True)
     resultado.fillna(0, inplace=True)
     for i in range(len(dataframes)):
         mesesPerc = '% ' + str(datas[i]) + ' meses'
         resultado[mesesPerc] = resultado[mesesPerc].astype(str).apply(add_perc)
-    
+
+    #Filtro de microrganismos
+    if (len(microrganismos_selecionados.get()) > 0):
+        micro_filtrados = []
+        for val in microrganismos_selecionados.get():
+            micro_filtrados.append(microganismos_dict['Microrganismos'][int(val)])
+        resultado = resultado[resultado.Microrganismo.isin(micro_filtrados)]
     return resultado
+    
 
 def data(valor):
     if (valor.month < 10):
         return str(valor.year) + '/' + '0' + str(valor.month)
     return str(valor.year) + '/' + str(valor.month)
+
 
 def isolamento_bacterias_resistentes():
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 

@@ -33,7 +33,7 @@ app_ui = ui.page_fluid (
 
 ''' SERVER '''
 def server(input: Inputs, output: Outputs, session: Session):
-    microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, microganismos_dict)
+    microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, microganismos_dict, motivo_admissao_dict)
     hospitais_server.hospitais_server('hospitais', indicadores_df)
 
 
