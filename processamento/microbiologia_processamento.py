@@ -2,7 +2,7 @@ import pandas
 import numpy as np
 import datetime
 
-def get_pathogen_type_name():
+def get_microrganismos_dict():
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
                                         sep=';', encoding='latin-1', low_memory=True, 
                                         usecols=["pathogen_type_name"])
@@ -11,26 +11,24 @@ def get_pathogen_type_name():
     microbiologia.sort_values(by='Microrganismos', inplace=True)
     return microbiologia.to_dict()
 
+
 def add_perc(num):
     if (num != '0.0'):
         return num + '%'
     return '0.00%'
 
 
-def get_dataframe():
+def get_microbiologia_df(admissao):
     #Abre o csv de Microbiologia
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
                                     sep=';', encoding='latin-1', low_memory=True, 
                                     index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"],
                                     usecols=["id_paciente", "id_hosp_internacao", "id_uti_internacao",
                                               "infec_coleta_data", "pathogen_type_name"], parse_dates=["infec_coleta_data"])
-    admissao = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Admissao.csv", 
-                                    index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"],
-                                    sep=';', encoding='latin-1', low_memory=True, 
-                                    usecols=["id_paciente", "id_hosp_internacao", "id_uti_internacao", "age"])
+    admissao = admissao[["age", "hospital_code", "admission_reason_name"]]
     return microbiologia.join(admissao)
 
-def frequencia_ident_isolados(microbiologia, age_range):
+def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados):
     microbiologia = microbiologia.copy()
     microbiologia.reset_index(drop=True, inplace=True)
 
@@ -38,7 +36,12 @@ def frequencia_ident_isolados(microbiologia, age_range):
     microbiologia = microbiologia[microbiologia['age'] >= age_range[0]]
     microbiologia = microbiologia[microbiologia['age'] <= age_range[1]]
 
-    microbiologia.drop(columns=['age'], inplace=True)
+    #Filtro de hospitais
+    if (len(hospitais_selecionados.get()) > 0):
+        microbiologia = microbiologia.loc[microbiologia['hospital_code'].isin(hospitais_selecionados.get())]
+
+
+    microbiologia.drop(columns=['age', 'hospital_code', 'admission_reason_name'], inplace=True)
     datas = [3, 6, 12, 36, 72]
     dataframes = []
     for nDias in range(len(datas)):
@@ -80,3 +83,22 @@ def isolamento_bacterias_resistentes():
     resistentes = resistentes.groupby(["pathogen_type_name", "infec_coleta_data"]).count()
     resistentes.reset_index(drop=False, inplace=True)
     return resistentes
+
+
+def get_hospitais_dict():
+    hospitais = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Banco CCIH_HMV.csv", 
+                                    sep=';', encoding='utf-8', low_memory=True, 
+                                )
+    hospitais = hospitais.rename(columns={ hospitais.columns[0]: "hospital_code" })
+
+    hospitais = hospitais[['hospital_code', 'id_inst']]
+    hospitais = hospitais.drop_duplicates(subset='hospital_code').set_index('hospital_code')
+
+    return hospitais.to_dict()['id_inst']
+
+
+def get_motivos_admissao_dict(motivo_admissao):
+    motivo_admissao = motivo_admissao.reset_index()
+    motivo_admissao = motivo_admissao[['admission_reason_name']]
+    motivo_admissao = motivo_admissao.drop_duplicates()
+    return motivo_admissao.to_dict()['admission_reason_name']
