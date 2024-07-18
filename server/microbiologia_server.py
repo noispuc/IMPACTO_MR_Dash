@@ -3,7 +3,7 @@ from processamento import microbiologia_processamento
 from datetime import datetime
 
 @module.server
-def microbiologia_server(input: Inputs, output: Outputs, session: Session, microbiologia_df, microganismos_dict, motivo_admissao_dict):
+def microbiologia_server(input: Inputs, output: Outputs, session: Session, microbiologia_df, microganismos_dict, motivo_admissao_dict, diagnosticos_dict):
     
     #DataFrame dos microrganismos
     @render.data_frame
@@ -11,7 +11,8 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
         microrganismos_df = microbiologia_processamento.frequencia_ident_isolados(microbiologia_df, input.slider_age(), 
                                                                                   input.selectize_hospitais_microbiologia, input.selectize_motivo_admissao_microbiologia, 
                                                                                   motivo_admissao_dict, input.selectize_microrganismos_microbiologia, microganismos_dict,
-                                                                                  input.selectize_MFI_microbiologia, input.selectize_SAPS_microbiologia)
+                                                                                  input.selectize_MFI_microbiologia, input.selectize_SAPS_microbiologia,
+                                                                                  input.selectize_diagnostico_microbiologia, diagnosticos_dict)
         return render.DataGrid(microrganismos_df)
     
 
@@ -21,5 +22,12 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
         microrganismos_df = microbiologia_processamento.frequencia_ident_isolados(microbiologia_df, input.slider_age(), 
                                                                                   input.selectize_hospitais_microbiologia, input.selectize_motivo_admissao_microbiologia, 
                                                                                   motivo_admissao_dict, input.selectize_microrganismos_microbiologia, microganismos_dict,
-                                                                                  input.selectize_MFI_microbiologia, input.selectize_SAPS_microbiologia)
+                                                                                  input.selectize_MFI_microbiologia, input.selectize_SAPS_microbiologia, 
+                                                                                  input.selectize_diagnostico_microbiologia, diagnosticos_dict)
         yield microrganismos_df.to_csv(index=None, sep=';')
+
+
+    @render.data_frame
+    def tabela_microrganismos_resistentes():
+        microrganismos_df = microbiologia_processamento.frequencia_microrganismos_resistentes()
+        return render.DataGrid(microrganismos_df)

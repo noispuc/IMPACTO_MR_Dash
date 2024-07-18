@@ -25,11 +25,11 @@ def get_microbiologia_df(admissao):
                                     index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"],
                                     usecols=["id_paciente", "id_hosp_internacao", "id_uti_internacao",
                                               "infec_coleta_data", "pathogen_type_name"], parse_dates=["infec_coleta_data"])
-    admissao = admissao[["age", "hospital_code", "admission_reason_name", "mfi_points", "saps3points"]]
+    admissao = admissao[["age", "hospital_code", "admission_reason_name", "mfi_points", "saps3points", "admission_main_diagnosis_name"]]
     return microbiologia.join(admissao)
 
 
-def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, motivos_selecionados, motivos_dict, microrganismos_selecionados, microganismos_dict, mfi_selecionados, saps_selecionados):
+def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, motivos_selecionados, motivos_dict, microrganismos_selecionados, microganismos_dict, mfi_selecionados, saps_selecionados, diagnosticos_selecionados, diagnosticos_dict):
     microbiologia = microbiologia.copy()
     microbiologia.reset_index(drop=True, inplace=True)
 
@@ -58,7 +58,7 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
             microbiologia = microbiologia[~((75 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 95))] 
         if ('4' not in saps_selecionados.get()):
             microbiologia = microbiologia[microbiologia['saps3points'] < 95]
-    microbiologia.to_csv('out.csv', index=False)
+
 
     #Filtro de hospitais
     if (len(hospitais_selecionados.get()) > 0):
@@ -70,12 +70,17 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
         motivos_lista = []
         for val in motivos_selecionados.get():
             motivos_lista.append(motivos_dict[int(val)])
-        print(motivos_lista)
         microbiologia = microbiologia.loc[microbiologia['admission_reason_name'].isin(motivos_lista)]
 
+    #Filtro de diagnóstico
+    if (len(diagnosticos_selecionados.get()) > 0):
+        diagnosticos_lista = []
+        for val in diagnosticos_selecionados.get():
+            diagnosticos_lista.append(diagnosticos_dict[int(val)])
+        microbiologia = microbiologia.loc[microbiologia['admission_main_diagnosis_name'].isin(diagnosticos_lista)]
 
     #Retira as colunas de filtro
-    microbiologia.drop(columns=['age', 'hospital_code', 'admission_reason_name', 'mfi_points', 'saps3points'], inplace=True)
+    microbiologia.drop(columns=['age', 'hospital_code', 'admission_reason_name', 'mfi_points', 'saps3points', 'admission_main_diagnosis_name'], inplace=True)
 
 
     #Cria dataframes para cada período
@@ -107,7 +112,7 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
     if (len(microrganismos_selecionados.get()) > 0):
         micro_filtrados = []
         for val in microrganismos_selecionados.get():
-            micro_filtrados.append(microganismos_dict['Microrganismos'][int(val)])
+            micro_filtrados.append(microganismos_dict[int(val)])
         resultado = resultado[resultado.Microrganismo.isin(micro_filtrados)]
     return resultado
     
@@ -118,7 +123,7 @@ def data(valor):
     return str(valor.year) + '/' + str(valor.month)
 
 
-def isolamento_bacterias_resistentes():
+def frequencia_microrganismos_resistentes():
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
                                     sep=';', encoding='latin-1', low_memory=True, 
                                     usecols=["infec_coleta_data", "pathogen_type_name", "resistente"], parse_dates=["infec_coleta_data"])
@@ -148,3 +153,10 @@ def get_motivos_admissao_dict(motivo_admissao):
     motivo_admissao = motivo_admissao[['admission_reason_name']]
     motivo_admissao = motivo_admissao.drop_duplicates()
     return motivo_admissao.to_dict()['admission_reason_name']
+
+
+def get_diagnosticos_dict(diagnosticos):
+    diagnosticos = diagnosticos.reset_index()
+    diagnosticos = diagnosticos[['admission_main_diagnosis_name']]
+    diagnosticos = diagnosticos.drop_duplicates()
+    return diagnosticos.to_dict()['admission_main_diagnosis_name']
