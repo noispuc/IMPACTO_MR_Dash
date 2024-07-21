@@ -1,30 +1,19 @@
 
 import pandas as pd
 
-def get_desfecho_adm():
-
-    admissoes = pd.read_csv("d:/MDR\MDR_Impacto_MR/analysis_impacto_R/data/Admissao.csv", 
-                            sep=";", index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"], encoding='latin-1',)
-    desfecho = pd.read_csv("d:/MDR/MDR_Impacto_MR/analysis_impacto_R/data\Desfecho.csv", 
-                        sep=";", index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"], encoding='latin-1',)
-    desfecho_adm = pd.merge(admissoes, desfecho, left_on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], right_on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], how='left')
-
-    desfecho_adm['mes_ano_uti'] = pd.to_datetime(desfecho_adm['unit_admission_date'], errors='coerce')
-    desfecho_adm['ano_uti'] = desfecho_adm['mes_ano_uti'].dt.year.astype(str)
-
+def get_desfecho_adm(desfecho, admissao):
+    admissao = admissao[['unit_admission_date', 'hospital_code']]
+    desfecho = desfecho[['hospital_length_stay', 'unit_length_stay', 'hospital_discharge_code']]
+    desfecho_adm = pd.merge(admissao, desfecho, left_on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], right_on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], how='left')
+    desfecho_adm['ano_uti'] = desfecho_adm['unit_admission_date'].dt.year.astype(str)
     desfecho_adm = desfecho_adm.reset_index().drop_duplicates(subset='id_paciente', keep='first').set_index(['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'])
 
     return desfecho_adm
 
-def get_microbio():
-
-    microbio = pd.read_csv("d:/MDR/MDR_Impacto_MR/analysis_impacto_R/data\Microbiologia.csv", 
-                       sep=";", index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"], encoding='latin-1',)
-    microbio['mes_ano_coleta'] = pd.to_datetime(microbio['infec_coleta_data'], errors='coerce')
-    microbio['ano_coleta'] = microbio['mes_ano_coleta'].dt.year.astype(str)
-
+def get_microbio(microbio):
+    microbio = microbio[['infec_coleta_data',]]
+    microbio['ano_coleta'] = microbio['infec_coleta_data'].dt.year.astype(str)
     microbio = microbio.reset_index().drop_duplicates(subset='id_paciente', keep='first').set_index(['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'])
-
     return microbio
 
 def get_df_pacientes_dia(desfecho_adm, microbio):
@@ -49,6 +38,7 @@ def get_df_pacientes_dia(desfecho_adm, microbio):
     return df_pacientes_dia
 
 def get_desfecho_juntas(desfecho_adm, microbio):
+
     coluna_desfecho = desfecho_adm \
                    .assign(obito=lambda x: (x['hospital_discharge_code'] == 'Óbito').astype(int)) \
                    .groupby(['hospital_code', 'ano_uti']).agg({'obito': ['sum', 'size']}) \
@@ -69,7 +59,13 @@ def get_desfecho_juntas(desfecho_adm, microbio):
 
     return desfecho_juntas 
 
-def get_tabela_indicadores(df_pacientes_dia, desfecho_juntas):
+def get_tabela_indicadores(admissao, microbiologia, desfecho):
+    desfecho_adm = get_desfecho_adm(desfecho, admissao)
+    microbio = get_microbio(microbiologia)
+
+    df_pacientes_dia = get_df_pacientes_dia(desfecho_adm, microbio)
+    desfecho_juntas = get_desfecho_juntas(desfecho_adm, microbio)
+
     tabela_indicadores = desfecho_juntas.merge(df_pacientes_dia,
                                         on=['hospital_code', 'ano_uti'], 
                                         how='left')\

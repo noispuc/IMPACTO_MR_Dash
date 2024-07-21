@@ -1,6 +1,8 @@
 import pandas
 import numpy as np
 import datetime
+import plotly.express as px
+
 
 def get_microrganismos_dict():
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
@@ -115,26 +117,6 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
             micro_filtrados.append(microganismos_dict[int(val)])
         resultado = resultado[resultado.Microrganismo.isin(micro_filtrados)]
     return resultado
-    
-
-def data(valor):
-    if (valor.month < 10):
-        return str(valor.year) + '/' + '0' + str(valor.month)
-    return str(valor.year) + '/' + str(valor.month)
-
-
-def frequencia_microrganismos_resistentes():
-    microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
-                                    sep=';', encoding='latin-1', low_memory=True, 
-                                    usecols=["infec_coleta_data", "pathogen_type_name", "resistente"], parse_dates=["infec_coleta_data"])
-    
-    #Filtra somente pelas resistentes
-    resistentes = microbiologia[microbiologia.resistente == 'Sim']
-    resistentes['infec_coleta_data'] = resistentes['infec_coleta_data'].apply(data)
-    resistentes = resistentes.groupby(["pathogen_type_name", "infec_coleta_data"]).count()
-    resistentes.reset_index(drop=False, inplace=True)
-    return resistentes
-
 
 def get_hospitais_dict():
     hospitais = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Banco CCIH_HMV.csv", 
@@ -160,3 +142,36 @@ def get_diagnosticos_dict(diagnosticos):
     diagnosticos = diagnosticos[['admission_main_diagnosis_name']]
     diagnosticos = diagnosticos.drop_duplicates()
     return diagnosticos.to_dict()['admission_main_diagnosis_name']
+
+
+def data_to_string(valor):
+    if (valor.month < 10):
+        return str(valor.year) + '/' + '0' + str(valor.month)
+    return str(valor.year) + '/' + str(valor.month)
+
+def frequencia_resistente_inicializa(microbiologia):
+    microbiologia = microbiologia[["infec_coleta_data", "pathogen_type_name", "resistente"]]
+    #Filtra pelas resistentes e não resistentes
+    resistentes = microbiologia[microbiologia.resistente == 'Sim']
+    sensiveis = microbiologia[microbiologia.resistente != 'Sim']
+    resistentes['infec_coleta_data'] = resistentes['infec_coleta_data'].apply(data_to_string)
+    sensiveis['infec_coleta_data'] = sensiveis['infec_coleta_data'].apply(data_to_string)
+    resistentes = resistentes.groupby(["pathogen_type_name", "infec_coleta_data"]).count()
+    sensiveis.fillna(0, inplace=True)
+    sensiveis = sensiveis.groupby(["pathogen_type_name", "infec_coleta_data"]).count()
+    sensiveis.rename(columns={"resistente": "sensiveis"}, inplace=True)
+    resistentes = resistentes.join(sensiveis, how='outer')
+
+    resistentes.reset_index(drop=False, inplace=True)
+    return resistentes
+
+def frequencia_resistentes_update(resistentes, microrganismos_selecionados, microganismos_dict):
+    #Filtro de microrganismos
+    if (len(microrganismos_selecionados.get()) > 0):
+        micro_filtrados = []
+        for val in microrganismos_selecionados.get():
+            micro_filtrados.append(microganismos_dict[int(val)])
+        resistentes = resistentes[resistentes.pathogen_type_name.isin(micro_filtrados)]
+
+    resistentes = resistentes.groupby(["infec_coleta_data"]).agg({'resistente': 'sum', 'sensiveis': 'sum'}).reset_index()
+    return resistentes    

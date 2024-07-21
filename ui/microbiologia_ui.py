@@ -1,4 +1,5 @@
 from shiny import ui, module
+from shinywidgets import output_widget
 
 @module.ui
 def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict):
@@ -50,9 +51,14 @@ def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, 
                 ui.output_data_frame(id="tabela_frequencia_microrganismo"),
                 ui.download_button("download_tabela_frequencia_microrganismo", "Baixar Tabela"),
             ),
+
+
             ui.card(
                 ui.card_header("Frequência de Microrganismos Resistentes"),
-                ui.output_data_frame(id="tabela_microrganismos_resistentes"),
-                #ui.download_button("download_tabela_frequencia_microrganismo", "Baixar Tabela"),
+                ui.navset_pill(
+                    ui.nav_panel("Gráfico", output_widget("grafico_microrganismos_resistentes")),
+                    ui.nav_panel("Tabela", ui.output_data_frame(id="tabela_microrganismos_resistentes")),
+                    id="freq_resistente_pill",  
+                ),
             ),
     )

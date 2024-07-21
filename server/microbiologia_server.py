@@ -1,9 +1,11 @@
 from shiny import Inputs, Outputs, Session, module, render
+from shinywidgets import render_widget
+import plotly.express as px
 from processamento import microbiologia_processamento
 from datetime import datetime
 
 @module.server
-def microbiologia_server(input: Inputs, output: Outputs, session: Session, microbiologia_df, microganismos_dict, motivo_admissao_dict, diagnosticos_dict):
+def microbiologia_server(input: Inputs, output: Outputs, session: Session, microbiologia_df, resistentes_df, microganismos_dict, motivo_admissao_dict, diagnosticos_dict):
     
     #DataFrame dos microrganismos
     @render.data_frame
@@ -29,5 +31,11 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
 
     @render.data_frame
     def tabela_microrganismos_resistentes():
-        microrganismos_df = microbiologia_processamento.frequencia_microrganismos_resistentes()
+        microrganismos_df = microbiologia_processamento.frequencia_resistentes_update(resistentes_df, input.selectize_microrganismos_microbiologia, microganismos_dict)
         return render.DataGrid(microrganismos_df)
+    
+    @render_widget
+    def grafico_microrganismos_resistentes():
+        microrganismos_df = microbiologia_processamento.frequencia_resistentes_update(resistentes_df, input.selectize_microrganismos_microbiologia, microganismos_dict)
+        resistentes_plot = px.bar(microrganismos_df, x="infec_coleta_data", y=["resistente", "sensiveis"])
+        return resistentes_plot  
