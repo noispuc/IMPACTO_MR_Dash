@@ -1,5 +1,36 @@
+import sys
+import os
+# Adiciona o diretório pai ao sys.path para permitir a importação de db_connection
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from db_connection import create_connection
+
 
 import pandas as pd
+
+#teste de conexao do banco
+def get_teste():
+    # Conectar ao banco de dados
+    conn = create_connection()
+    if not conn:
+        return pd.DataFrame()  # Retornar um DataFrame vazio em caso de falha na conexão
+
+    try:
+        # Executar as consultas SQL para obter os dados das tabelas Admissao e Desfecho
+        query = "SELECT * FROM Admissao"
+        
+
+        admissoes = pd.read_sql_query(query, conn,index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"])
+
+      
+        return admissoes
+    except Exception as e:
+        print(f"Erro ao executar a consulta: {e}")
+        return pd.DataFrame()  # Retornar um DataFrame vazio em caso de erro
+    finally:
+        conn.close()
+
+
 
 def get_desfecho_adm(desfecho, admissao):
     admissao = admissao[['unit_admission_date', 'hospital_code']]
@@ -75,3 +106,6 @@ def get_tabela_indicadores(admissao, microbiologia, desfecho):
                                                     'positivos_uti': 'pacientes_dia_uti'})
 
     return tabela_indicadores                 
+
+teste = get_teste()
+print (teste.head())
