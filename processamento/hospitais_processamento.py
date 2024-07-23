@@ -17,13 +17,15 @@ def get_teste():
 
     try:
         # Executar as consultas SQL para obter os dados das tabelas Admissao e Desfecho
-        query = "SELECT * FROM Admissao"
+        query = query = 'SELECT * FROM public.antimicrobiano'
+
         
 
-        admissoes = pd.read_sql_query(query, conn,index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"])
+        antimicrobiano = pd.read_sql_query(query, conn,index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"])
+        
 
       
-        return admissoes
+        return antimicrobiano
     except Exception as e:
         print(f"Erro ao executar a consulta: {e}")
         return pd.DataFrame()  # Retornar um DataFrame vazio em caso de erro
