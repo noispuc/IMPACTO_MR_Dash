@@ -3,6 +3,8 @@ import numpy as np
 import datetime
 import plotly.express as px
 
+from processamento.filtros_processamento import filtro_mfi, filtro_microrganismos, filtro_saps
+
 
 def get_microrganismos_dict():
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
@@ -39,28 +41,11 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
     microbiologia = microbiologia[microbiologia['age'] >= age_range[0]]
     microbiologia = microbiologia[microbiologia['age'] <= age_range[1]]
 
-    #Filtro MFI
-    if (len(mfi_selecionados.get()) > 0):
-        if ('NF' not in mfi_selecionados.get()):
-            microbiologia = microbiologia[microbiologia['mfi_points'] != 0]
-        if ('PF' not in mfi_selecionados.get()):
-            microbiologia = microbiologia[~microbiologia['mfi_points'].isin([1, 2])]
-        if ('F' not in mfi_selecionados.get()):
-            microbiologia = microbiologia[microbiologia['mfi_points'] < 3]    
+    #Filtro MFI 
+    microbiologia = filtro_mfi(microbiologia, mfi_selecionados)
 
     #Filtro SAPS
-    if (len(saps_selecionados.get()) > 0):
-        if ('0' not in saps_selecionados.get()):
-            microbiologia = microbiologia[microbiologia['saps3points'] >= 35]
-        if ('1' not in saps_selecionados.get()):
-            microbiologia = microbiologia[~((35 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 54))]
-        if ('2' not in saps_selecionados.get()):
-            microbiologia = microbiologia[~((55 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 74))]  
-        if ('3' not in saps_selecionados.get()):
-            microbiologia = microbiologia[~((75 <= microbiologia['saps3points']) & (microbiologia['saps3points'] <= 95))] 
-        if ('4' not in saps_selecionados.get()):
-            microbiologia = microbiologia[microbiologia['saps3points'] < 95]
-
+    microbiologia = filtro_saps(microbiologia, saps_selecionados)
 
     #Filtro de hospitais
     if (len(hospitais_selecionados.get()) > 0):
@@ -111,11 +96,8 @@ def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, 
         resultado[mesesPerc] = resultado[mesesPerc].astype(str).apply(add_perc)
 
     #Filtro de microrganismos
-    if (len(microrganismos_selecionados.get()) > 0):
-        micro_filtrados = []
-        for val in microrganismos_selecionados.get():
-            micro_filtrados.append(microganismos_dict[int(val)])
-        resultado = resultado[resultado.Microrganismo.isin(micro_filtrados)]
+    resultado = filtro_microrganismos(resultado, microrganismos_selecionados, microganismos_dict)
+
     return resultado
 
 def get_hospitais_dict():
@@ -163,15 +145,14 @@ def frequencia_resistente_inicializa(microbiologia):
     resistentes = resistentes.join(sensiveis, how='outer')
 
     resistentes.reset_index(drop=False, inplace=True)
+    resistentes.rename(columns={"infec_coleta_data": "Microrganismo",}, inplace=True)
     return resistentes
 
 def frequencia_resistentes_update(resistentes, microrganismos_selecionados, microganismos_dict):
+    print("Hey")
+    print(microrganismos_selecionados)
     #Filtro de microrganismos
-    if (len(microrganismos_selecionados.get()) > 0):
-        micro_filtrados = []
-        for val in microrganismos_selecionados.get():
-            micro_filtrados.append(microganismos_dict[int(val)])
-        resistentes = resistentes[resistentes.pathogen_type_name.isin(micro_filtrados)]
+    resistentes = filtro_microrganismos(resistentes, microrganismos_selecionados, microganismos_dict)
 
-    resistentes = resistentes.groupby(["infec_coleta_data"]).agg({'resistente': 'sum', 'sensiveis': 'sum'}).reset_index()
+    resistentes = resistentes.groupby(["Microrganismo"]).agg({'resistente': 'sum', 'sensiveis': 'sum'}).reset_index()
     return resistentes    

@@ -37,5 +37,5 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
     @render_widget
     def grafico_microrganismos_resistentes():
         microrganismos_df = microbiologia_processamento.frequencia_resistentes_update(resistentes_df, input.selectize_microrganismos_microbiologia, microganismos_dict)
-        resistentes_plot = px.bar(microrganismos_df, x="infec_coleta_data", y=["resistente", "sensiveis"])
+        resistentes_plot = px.bar(microrganismos_df, x="Microrganismo", y=["resistente", "sensiveis"])
         return resistentes_plot  

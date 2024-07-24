@@ -36,7 +36,8 @@ indicadores_df = hospitais_processamento.get_tabela_indicadores(admissao, microb
 app_ui = ui.page_navbar(  
         ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict)),
         ui.nav_panel("Antibióticos", "Placeholder"),  
-        ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),  
+        ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),
+        ui.nav_panel("Dispositivos", "Placeholder"), 
         title="Impacto MR",  
         id="page",  
     )  
