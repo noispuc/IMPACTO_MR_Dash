@@ -2,7 +2,7 @@ import pandas
 import numpy as np
 import datetime
 import plotly.express as px
-
+from db_connection import create_connection
 
 def get_microrganismos_dict():
     microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
@@ -21,14 +21,20 @@ def add_perc(num):
 
 
 def get_microbiologia_df(admissao):
-    #Abre o csv de Microbiologia
-    microbiologia = pandas.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impactoMR/data/Microbiologia.csv", 
-                                    sep=';', encoding='latin-1', low_memory=True, 
-                                    index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"],
-                                    usecols=["id_paciente", "id_hosp_internacao", "id_uti_internacao",
-                                              "infec_coleta_data", "pathogen_type_name"], parse_dates=["infec_coleta_data"])
-    admissao = admissao[["age", "hospital_code", "admission_reason_name", "mfi_points", "saps3points", "admission_main_diagnosis_name"]]
-    return microbiologia.join(admissao)
+    # Conectar ao banco de dados
+    conn = create_connection()
+    if not conn:
+        return pandas.DataFrame()  # Retornar um DataFrame vazio em caso de falha na conexão
+    try:
+        # Executar as consultas SQL para obter os dados das tabelas Admissao e Microbiologia
+        query = query = 'SELECT * FROM public.vwfreqidentmicrorganismos'
+        viewFreqIdentMicro = pandas.read_sql_query(query, conn,index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"])
+        return viewFreqIdentMicro
+    except Exception as e:
+        print(f"Erro ao executar a consulta: {e}")
+        return pandas.DataFrame()  # Retornar um DataFrame vazio em caso de erro
+    finally:
+        conn.close()
 
 
 def frequencia_ident_isolados(microbiologia, age_range, hospitais_selecionados, motivos_selecionados, motivos_dict, microrganismos_selecionados, microganismos_dict, mfi_selecionados, saps_selecionados, diagnosticos_selecionados, diagnosticos_dict):

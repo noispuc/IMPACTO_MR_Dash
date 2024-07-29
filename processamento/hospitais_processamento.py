@@ -40,7 +40,7 @@ def get_desfecho_adm(desfecho, admissao):
     desfecho_adm = pd.merge(admissao, desfecho, left_on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], right_on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], how='left')
     desfecho_adm['ano_uti'] = desfecho_adm['unit_admission_date'].dt.year.astype(str)
     desfecho_adm = desfecho_adm.reset_index().drop_duplicates(subset='id_paciente', keep='first').set_index(['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'])
-
+    print(desfecho_adm)
     return desfecho_adm
 
 def get_microbio(microbio):
@@ -51,9 +51,11 @@ def get_microbio(microbio):
 
 def get_df_pacientes_dia(desfecho_adm, microbio):
     df_totalPositivos = microbio.merge(desfecho_adm, on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], how='left')\
-                        .groupby(['hospital_code', 'ano_coleta'])\
-                        .size()\
-                        .reset_index(name='count')
+                        #.groupby(['hospital_code', 'ano_coleta'])\
+                        #.size()\
+                        #.reset_index(name='count')
+
+    print(df_totalPositivos)
 
     df_pacientes_dia = (
         desfecho_adm[['hospital_code', 'hospital_length_stay', 'unit_length_stay', 'ano_uti']]
