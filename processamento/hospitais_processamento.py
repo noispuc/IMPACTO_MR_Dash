@@ -51,9 +51,9 @@ def get_microbio(microbio):
 
 def get_df_pacientes_dia(desfecho_adm, microbio):
     df_totalPositivos = microbio.merge(desfecho_adm, on=['id_paciente', 'id_hosp_internacao', 'id_uti_internacao'], how='left')\
-                        #.groupby(['hospital_code', 'ano_coleta'])\
-                        #.size()\
-                        #.reset_index(name='count')
+                        .groupby(['hospital_code', 'ano_coleta'])\
+                        .size()\
+                        .reset_index(name='count')
 
     print(df_totalPositivos)
 

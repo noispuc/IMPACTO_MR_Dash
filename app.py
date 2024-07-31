@@ -1,6 +1,6 @@
-from server import microbiologia_server, hospitais_server
-from ui import microbiologia_ui, hospitais_ui
-from processamento import microbiologia_processamento, hospitais_processamento
+from server import microbiologia_server, hospitais_server, dispositivos_server
+from ui import microbiologia_ui, hospitais_ui, dispositivos_ui
+from processamento import microbiologia_processamento, hospitais_processamento, dispositivos_processamento
 from shiny import App, Inputs, ui, Outputs, Session
 import pandas as pd
 
@@ -30,13 +30,15 @@ diagnostico_dict = microbiologia_processamento.get_diagnosticos_dict(admissao[['
 
 '''Hospitais'''
 indicadores_df = hospitais_processamento.get_tabela_indicadores(admissao, microbiologia, desfecho)
-
+'''dispositivos'''
+dispositivos_df = dispositivos_processamento.get_dispositivos_df()
 
 ''' UI '''
 app_ui = ui.page_navbar(  
         ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict)),
         ui.nav_panel("Antibióticos", "Placeholder"),  
         ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),  
+        ui.nav_panel("Dispositivos", dispositivos_ui.dispositivos_ui('dispositivos')),  
         title="Impacto MR",  
         id="page",  
     )  
@@ -45,6 +47,7 @@ app_ui = ui.page_navbar(
 def server(input: Inputs, output: Outputs, session: Session):
     microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, resistente_df, microganismos_dict, motivo_admissao_dict, diagnostico_dict)
     hospitais_server.hospitais_server('hospitais', indicadores_df)
+    dispositivos_server.dispositivos_server('dispositivos',dispositivos_df)
 
 
 app = App(app_ui, server)
