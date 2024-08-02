@@ -142,10 +142,7 @@ def dataframe():
             return '-'
 
         group_atb['Classificacao'] = group_atb.index.map(classificar_antibiotico_geral)
-        print(df_atbs)
-        print(group_atb)
         group_atb.reset_index(inplace=True)
-        
         return df_atbs, group_atb
 
     except Exception as e:

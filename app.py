@@ -48,7 +48,7 @@ conn.close()
 ''' UI '''
 app_ui = ui.page_navbar(  
         ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict)),
-        #ui.nav_panel("Antibióticos", antimicrobiano_ui.antimicrobiano_ui('antimicrobiano')),  
+        ui.nav_panel("Antibióticos", antimicrobiano_ui.antimicrobiano_ui('antimicrobiano')),  
         ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),  
         ui.nav_panel("Dispositivos", dispositivos_ui.dispositivos_ui('dispositivos')),  
         title="Impacto MR",  
@@ -60,7 +60,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, resistente_df, microrganismos_dict, motivo_admissao_dict, diagnostico_dict)
     hospitais_server.hospitais_server('hospitais', indicadores_df)
     dispositivos_server.dispositivos_server('dispositivos',dispositivos_df)
-    #antimicrobiano_server.antimicrobiano_server('antimicrobiano', df_atbs, group_atb)
+    antimicrobiano_server.antimicrobiano_server('antimicrobiano', df_atbs, group_atb)
 
 
 app = App(app_ui, server)
