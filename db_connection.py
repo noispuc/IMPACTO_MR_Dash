@@ -10,24 +10,16 @@ def create_connection():
 
     try:
         # Informações de conexão
-        engine = sqlalchemy.create_engine('postgresql://' +
-                                          config['postgresql']['user'] + ':' +
-                                          config['postgresql']['password'] + '@' +
-                                          config['postgresql']['host'] + ':' + 
-                                          config['postgresql']['port'] + '/' +
-                                          config['postgresql']['dbname'])
-
+        engine = sqlalchemy.create_engine('postgresql://{user}:{passwd}@{host}:{port}/{db}'.format(
+                user=config['postgresql']['user'], 
+                passwd=config['postgresql']['password'], 
+                host=config['postgresql']['host'], 
+                port=config['postgresql']['port'], 
+                db=config['postgresql']['dbname']))
+        
         connection = engine.connect()
         print("Conexão bem-sucedida!")
         return connection
     except OperationalError as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
         return None
-
-# Exemplo de uso
-'''
-if __name__ == "__main__":
-    conn = create_connection()
-    if conn:
-        conn.close()
-'''

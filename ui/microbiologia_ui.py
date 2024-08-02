@@ -1,11 +1,12 @@
 from shiny import ui, module
 from shinywidgets import output_widget
 
+from ui.filtros_ui import filtro_microrganismo_ui
+
 @module.ui
 def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict):
     return ui.layout_sidebar(
             ui.sidebar(
-        
                 ui.input_selectize(  
                 "selectize_microrganismos_microbiologia",  
                 "Microrganismo",  
@@ -16,6 +17,12 @@ def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, 
                 "selectize_hospitais_microbiologia",  
                 "Hospital",  
                 hospitais_dict,  
+                multiple=True),
+
+                ui.input_selectize(  
+                "selectize_tipo_hospital",  
+                "Tipo de Hospital",  
+                {"Publico": "Público", "Privado": "Privado"},
                 multiple=True),
 
                 ui.input_selectize(  

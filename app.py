@@ -18,12 +18,12 @@ microbiologia = pd.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impac
                         parse_dates=["infec_coleta_data"])
 
 '''Microbiologia'''
-microbiologia_df = microbiologia_processamento.get_microbiologia_df(admissao)
+microbiologia_df = microbiologia_processamento.get_microbiologia_df()
 resistente_df = microbiologia_processamento.frequencia_resistente_inicializa(microbiologia)
 
 
 '''Microbiologia - Filtros'''
-microganismos_dict = microbiologia_processamento.get_microrganismos_dict()
+microrganismos_dict = microbiologia_processamento.get_microrganismos_dict()
 hospitais_dict = microbiologia_processamento.get_hospitais_dict()
 motivo_admissao_dict = microbiologia_processamento.get_motivos_admissao_dict(admissao[['admission_reason_name']])
 diagnostico_dict = microbiologia_processamento.get_diagnosticos_dict(admissao[['admission_main_diagnosis_name']])
@@ -35,7 +35,7 @@ dispositivos_df = dispositivos_processamento.get_dispositivos_df()
 
 ''' UI '''
 app_ui = ui.page_navbar(  
-        ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict)),
+        ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict)),
         ui.nav_panel("Antibióticos", "Placeholder"),  
         ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),  
         ui.nav_panel("Dispositivos", dispositivos_ui.dispositivos_ui('dispositivos')),  
@@ -45,7 +45,7 @@ app_ui = ui.page_navbar(
 
 ''' SERVER '''
 def server(input: Inputs, output: Outputs, session: Session):
-    microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, resistente_df, microganismos_dict, motivo_admissao_dict, diagnostico_dict)
+    microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, resistente_df, microrganismos_dict, motivo_admissao_dict, diagnostico_dict)
     hospitais_server.hospitais_server('hospitais', indicadores_df)
     dispositivos_server.dispositivos_server('dispositivos',dispositivos_df)
 
