@@ -1,20 +1,13 @@
-from shiny import App, reactive, render, ui
-from antimicrobiano_processamento import dataframe
+from shiny import Inputs, Outputs, Session, reactive, render, module
+from processamento import antimicrobiano_processamento
 
-def server(input, output, session):
-    @reactive.Calc
-    def dados():
-        df_final, df_descritivo = dataframe()
-        return df_final, df_descritivo
+@module.server
+def antimicrobiano_server(input: Inputs, output: Outputs, session: Session, df_final, df_descritivo):
 
-    @output
     @render.data_frame
-    def tabela_atbs_original():
-        df_final, _ = dados()
-        return df_final
+    def tabela_atbs():
+        return render.DataGrid(df_final)
 
-    @output
     @render.data_frame
-    def tabela_atbs_nova():
-        _, df_descritivo = dados()
-        return df_descritivo
+    def tabela_atbs_descritiva():
+        return render.DataGrid(df_descritivo)

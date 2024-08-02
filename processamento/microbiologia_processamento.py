@@ -104,6 +104,17 @@ def get_motivos_admissao_dict(motivo_admissao):
     motivo_admissao = motivo_admissao.drop_duplicates()
     return motivo_admissao.to_dict()['admission_reason_name']
 
+'''
+def get_uf_dict():
+    try:
+    # Executar as consultas SQL para obter os dados das tabelas Admissao e Microbiologia
+    query = query = 'SELECT * FROM public.vwfreqidentmicrorganismos'
+    viewFreqIdentMicro = pandas.read_sql_query(query, conn,index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"])
+        return uf_
+    except Exception as e:
+        print(f"Erro ao executar a consulta: {e}")
+        return pd.DataFrame()  # Retornar um DataFrame vazio em caso de erro    
+'''
 
 def get_diagnosticos_dict(diagnosticos):
     diagnosticos = diagnosticos.reset_index()

@@ -7,9 +7,9 @@ def dataframe():
         return None, None
 
     try:
-        df_atbs = pd.read_sql("SELECT * FROM antimicrobiano", conn)
-        df_admissao = pd.read_sql("SELECT * FROM admissao", conn)
-        df_desfecho = pd.read_sql("SELECT * FROM desfecho", conn)
+        df_atbs = pd.read_sql("SELECT * FROM public.antimicrobiano", conn)
+        df_admissao = pd.read_sql("SELECT * FROM public.admissao", conn)
+        df_desfecho = pd.read_sql("SELECT * FROM public.desfecho", conn)
 
         df_admissao['id_internacao'] = df_admissao['id_paciente'].astype(str) + "_" + df_admissao.index.astype(str)
 
@@ -142,7 +142,7 @@ def dataframe():
             return '-'
 
         group_atb['Classificacao'] = group_atb.index.map(classificar_antibiotico_geral)
-
+        group_atb.reset_index(inplace=True)
         return df_atbs, group_atb
 
     except Exception as e:
