@@ -4,7 +4,7 @@ from shinywidgets import output_widget
 from ui.filtros_ui import filtro_microrganismo_ui
 
 @module.ui
-def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict):
+def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict, estados_dict):
     return ui.layout_sidebar(
             ui.sidebar(
                 ui.input_selectize(  
@@ -14,15 +14,28 @@ def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, 
                 multiple=True),
 
                 ui.input_selectize(  
+                "selectize_tipo_hospital_microbiologia",  
+                "Tipo de Hospital",  
+                {"Público": "Público", "Privado": "Privado"},
+                multiple=True),
+
+                ui.input_selectize(  
                 "selectize_hospitais_microbiologia",  
                 "Hospital",  
                 hospitais_dict,  
                 multiple=True),
 
                 ui.input_selectize(  
-                "selectize_tipo_hospital",  
-                "Tipo de Hospital",  
-                {"Publico": "Público", "Privado": "Privado"},
+                "selectize_regiao_microbiologia",  
+                "Região",  
+                {"Norte": "Norte", "Nordeste": "Nordeste", "Centro-oeste": "Cento-oeste", 
+                 "Sudeste": "Sudeste", "Sul": "Sul"},
+                multiple=True),
+
+                ui.input_selectize(  
+                "selectize_estado_microbiologia",  
+                "Estado",  
+                estados_dict,  
                 multiple=True),
 
                 ui.input_selectize(  
@@ -50,8 +63,9 @@ def microbiologia_ui(microrganismos_dict, hospitais_dict, motivo_admissao_dict, 
                 multiple=True),
 
                 ui.input_slider(
-                "slider_age", "Idade", min=18, 
+                "slider_age_microbiologia", "Idade", min=18, 
                 max=120, value=[18, 120]),
+
             ),
             ui.card(
                 ui.card_header("Frequência de Identificação de Microrganismos"),

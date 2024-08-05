@@ -6,16 +6,16 @@ import pandas as pd
 #Se o intervalo não foi selecionado, retira as linhas que estão neste intervalo
 #Código dos SAPS selecionados, 0 = 0-34, 1 = 35-45, 2 = 55-74, 3 = 75-95, 4 = >95 
 def filtro_saps(dataframe, saps_selecionados):
-    if (len(saps_selecionados.get()) > 0):
-        if ('0' not in saps_selecionados.get()):
+    if (len(saps_selecionados) > 0):
+        if ('0' not in saps_selecionados):
             dataframe = dataframe[dataframe['saps3points'] >= 35]
-        if ('1' not in saps_selecionados.get()):
+        if ('1' not in saps_selecionados):
             dataframe = dataframe[~((35 <= dataframe['saps3points']) & (dataframe['saps3points'] <= 54))]
-        if ('2' not in saps_selecionados.get()):
+        if ('2' not in saps_selecionados):
             dataframe = dataframe[~((55 <= dataframe['saps3points']) & (dataframe['saps3points'] <= 74))]  
-        if ('3' not in saps_selecionados.get()):
+        if ('3' not in saps_selecionados):
             dataframe = dataframe[~((75 <= dataframe['saps3points']) & (dataframe['saps3points'] <= 95))] 
-        if ('4' not in saps_selecionados.get()):
+        if ('4' not in saps_selecionados):
             dataframe = dataframe[dataframe['saps3points'] < 95]
     return dataframe
 
@@ -25,10 +25,10 @@ def filtro_saps(dataframe, saps_selecionados):
 #do microrganismo como string
 def filtro_microrganismos(dataframe, microrganismos_selecionados, microganismos_dict):
     #Se algum microrganismo foi selecionado
-    if (len(microrganismos_selecionados.get()) > 0):
+    if (len(microrganismos_selecionados) > 0):
         #Lista das strings obtida a partir dos códigos no dicionário
         micro_filtrados = []
-        for val in microrganismos_selecionados.get():
+        for val in microrganismos_selecionados:
             #Converte o código inteiro na string com o nome do microrganismo e append esse nome na lista
             micro_filtrados.append(microganismos_dict[int(val)])
         #Verifica se o microrganismo do dataframe está na lista
@@ -39,12 +39,12 @@ def filtro_microrganismos(dataframe, microrganismos_selecionados, microganismos_
 #mfi_selecionados - Recebe os mfi selecionados, código NF (Non Frail), PF (Pre Frail) e F (Frail)
 #Non Frail = 0, Pre Frail = 1 ou 2, Frail >=3
 def filtro_mfi(dataframe, mfi_selecionados):
-    if (len(mfi_selecionados.get()) > 0):
-        if ('NF' not in mfi_selecionados.get()):
+    if (len(mfi_selecionados) > 0):
+        if ('NF' not in mfi_selecionados):
             dataframe = dataframe[dataframe['mfi_points'] != 0]
-        if ('PF' not in mfi_selecionados.get()):
+        if ('PF' not in mfi_selecionados):
             dataframe = dataframe[~dataframe['mfi_points'].isin([1, 2])]
-        if ('F' not in mfi_selecionados.get()):
+        if ('F' not in mfi_selecionados):
             dataframe = dataframe[dataframe['mfi_points'] < 3] 
     return dataframe
 
@@ -52,9 +52,9 @@ def filtro_mfi(dataframe, mfi_selecionados):
 #hospitais_selecionados - Usa o código do hospital para verificar se está no DataFrame
 def filtro_hospitais(dataframe, hospitais_selecionados):
     #Se algum hospital foi selecionado
-    if (len(hospitais_selecionados.get()) > 0):
+    if (len(hospitais_selecionados) > 0):
         #Verifica se o código do hospital está dentre os selecionados
-        dataframe = dataframe.loc[dataframe['hospital_code'].isin(hospitais_selecionados.get())]
+        dataframe = dataframe.loc[dataframe['hospital_code'].isin(hospitais_selecionados)]
     return dataframe
 
 #dataframe - Dataframe com a coluna age
@@ -71,9 +71,9 @@ def filtro_idade(dataframe, age_range):
 #motivos_dict - Faz a conversão do valor numérico do motivo à string
 def filtro_motivos_admissao(dataframe, motivos_selecionados, motivos_dict):
     #Se algum motivo foi selecionado
-    if (len(motivos_selecionados.get()) > 0):
+    if (len(motivos_selecionados) > 0):
             motivos_lista = []
-            for val in motivos_selecionados.get():
+            for val in motivos_selecionados:
                 motivos_lista.append(motivos_dict[int(val)])
             dataframe = dataframe.loc[dataframe['admission_reason_name'].isin(motivos_lista)]
     return dataframe
@@ -83,18 +83,33 @@ def filtro_motivos_admissao(dataframe, motivos_selecionados, motivos_dict):
 #diagnosticos_dict - Faz a conversão do valor numérico do motivo à string
 def filtro_diagnostico(dataframe, diagnosticos_selecionados, diagnosticos_dict):
     #Se algum diagnostico foi selecionado
-    if (len(diagnosticos_selecionados.get()) > 0):
+    if (len(diagnosticos_selecionados) > 0):
         diagnosticos_lista = []
-        for val in diagnosticos_selecionados.get():
+        for val in diagnosticos_selecionados:
             diagnosticos_lista.append(diagnosticos_dict[int(val)])
         dataframe = dataframe.loc[dataframe['admission_main_diagnosis_name'].isin(diagnosticos_lista)]
     return dataframe
 
-#TODO
 #dataframe - Dataframe com a coluna hospital_type_name
+#tipo_hospital_selecionado - Objeto que pode contar "Público" ou "Privado" ou ambos
 def filtro_tipo_hospital(dataframe, tipo_hospital_selecionado):
-    #Se algum diagnostico foi selecionado
-    #if (len(tipo_hospital_selecionado.get()) > 0):
-            #diagnosticos_lista.append(diagnosticos_dict[int(val)])
-        #dataframe = dataframe.loc[dataframe['admission_main_diagnosis_name'].isin(diagnosticos_lista)]
+    #Se algum tipo de hospital foi selecionado
+    if (len(tipo_hospital_selecionado) > 0):
+        dataframe = dataframe.loc[dataframe['hospital_type_name'].isin(tipo_hospital_selecionado)]
+    return dataframe
+
+#dataframe - Dataframe com a coluna hospital_type_name
+#regiao_selecionado - Objeto que contem as regioes selecionadas
+def filtro_regiao(dataframe, regiao_selecionado):
+    #Se alguma região foi selecionada
+    if (len(regiao_selecionado) > 0):
+        dataframe = dataframe.loc[dataframe['regiao'].isin(regiao_selecionado)]
+    return dataframe
+
+#dataframe - Dataframe com a coluna hospital_type_name
+#regiao_selecionado - Objeto que contem as regioes selecionadas
+def filtro_estado(dataframe, estado_selecionado):
+    #Se alguma região foi selecionada
+    if (len(estado_selecionado) > 0):
+        dataframe = dataframe.loc[dataframe['uf'].isin(estado_selecionado)]
     return dataframe

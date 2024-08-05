@@ -18,16 +18,6 @@ microbiologia = pd.read_csv("D:/MDR/MDR_Impacto_MR/analysis_impacto_python/impac
                         index_col=["id_paciente", "id_hosp_internacao", "id_uti_internacao"], 
                         parse_dates=["infec_coleta_data"])
 
-#Abre a conexão, realiza todo o processamento inicial
-conn = create_connection()
-if not conn:
-    print("Erro em estabelecer conexão com a base de dados") 
-    exit(1) #Encerra a aplicação
-
-'''Microbiologia'''
-microbiologia_df = microbiologia_processamento.get_microbiologia_df()
-resistente_df = microbiologia_processamento.frequencia_resistente_inicializa(microbiologia)
-
 '''Antimicrobiano'''
 df_atbs, group_atb = antimicrobiano_processamento.dataframe()
 
@@ -36,18 +26,17 @@ microrganismos_dict = microbiologia_processamento.get_microrganismos_dict()
 hospitais_dict = microbiologia_processamento.get_hospitais_dict()
 motivo_admissao_dict = microbiologia_processamento.get_motivos_admissao_dict(admissao[['admission_reason_name']])
 diagnostico_dict = microbiologia_processamento.get_diagnosticos_dict(admissao[['admission_main_diagnosis_name']])
+estados_dict = microbiologia_processamento.get_estados_dict()
 
 '''Hospitais'''
 indicadores_df = hospitais_processamento.get_tabela_indicadores(admissao, microbiologia, desfecho)
 '''dispositivos'''
 dispositivos_df = dispositivos_processamento.get_dispositivos_df()
 
-#Fecha a conexão inicial
-conn.close()
-
 ''' UI '''
 app_ui = ui.page_navbar(  
-        ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microrganismos_dict, hospitais_dict, motivo_admissao_dict, diagnostico_dict)),
+        ui.nav_panel("Microbiologia", microbiologia_ui.microbiologia_ui("microbiologia", microrganismos_dict, hospitais_dict, 
+                                                                        motivo_admissao_dict, diagnostico_dict, estados_dict)),
         ui.nav_panel("Antibióticos", antimicrobiano_ui.antimicrobiano_ui('antimicrobiano')),  
         ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),  
         ui.nav_panel("Dispositivos", dispositivos_ui.dispositivos_ui('dispositivos')),  
@@ -57,7 +46,7 @@ app_ui = ui.page_navbar(
 
 ''' SERVER '''
 def server(input: Inputs, output: Outputs, session: Session):
-    microbiologia_server.microbiologia_server("microbiologia", microbiologia_df, resistente_df, microrganismos_dict, motivo_admissao_dict, diagnostico_dict)
+    microbiologia_server.microbiologia_server("microbiologia", microrganismos_dict, motivo_admissao_dict, diagnostico_dict)
     hospitais_server.hospitais_server('hospitais', indicadores_df)
     dispositivos_server.dispositivos_server('dispositivos',dispositivos_df)
     antimicrobiano_server.antimicrobiano_server('antimicrobiano', df_atbs, group_atb)
