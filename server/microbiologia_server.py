@@ -114,6 +114,7 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
 
         microbiologia_df['infec_coleta_data'] = microbiologia_df['infec_coleta_data'].apply(data_to_string)
         microbiologia_df = microbiologia_df.groupby(["pathogen_type_name", "infec_coleta_data"]).size().reset_index(name="Casos")
+        microbiologia_df = microbiologia_df.sort_values('infec_coleta_data')
 
         return microbiologia_df
     

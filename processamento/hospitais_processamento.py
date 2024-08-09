@@ -1,5 +1,7 @@
 import pandas as pd
 
+from db_connection import fetch_from_db
+
 
 def get_desfecho_adm(desfecho, admissao):
     admissao = admissao[['unit_admission_date', 'hospital_code']]
@@ -72,5 +74,11 @@ def get_tabela_indicadores(admissao, microbiologia, desfecho):
                                                     "count": "quantidade_positivos",
                                                     'positivos_hosp': 'pacientes_dia_hosp',
                                                     'positivos_uti': 'pacientes_dia_uti'})
+    
+    viewhospitais = fetch_from_db('SELECT hospital_code, hospname FROM public.vwhospitais')
+
+    tabela_indicadores = viewhospitais.merge(tabela_indicadores,
+                                        on=['hospital_code'], 
+                                        how='left').drop(columns=['hospital_code'])
 
     return tabela_indicadores                 
