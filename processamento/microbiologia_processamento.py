@@ -40,6 +40,13 @@ def get_diagnosticos_dict(diagnosticos):
     diagnosticos = diagnosticos.drop_duplicates()
     return diagnosticos.to_dict()['admission_main_diagnosis_name']
 
+def get_amostra_dict():
+    tipo_especime = {
+        "Sangue": []
+
+    }
+
+
 
 def get_estados_dict():
     estados_brasil = {

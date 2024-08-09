@@ -1,4 +1,4 @@
-from shiny import Inputs, Outputs, Session, module, render, reactive
+from shiny import Inputs, Outputs, Session, module, render, reactive, ui
 from shinywidgets import render_widget
 import plotly.express as px
 from processamento import microbiologia_processamento
@@ -94,14 +94,6 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
     def tabela_frequencia_microrganismo():
         return render.DataGrid(frequencia_microrganismos())
 
-
-    #Download do DataFrame dos microrganismos
-    #Chama a função reativa que cria a tabela final
-    @render.download(filename=lambda: f"frequencia-micorganismo-{datetime.datetime.now()}.csv")
-    async def download_tabela_frequencia_microrganismo():
-        yield frequencia_microrganismos().to_csv(index=None, sep=';')
-
-
     #Função auxiliar da função frequencia_resistente_inicializa
     #Faz a conversão da data como Datetime para uma string
     #Formato: AAAA/MM - Esse formato garante que a tabela fique organizada crescentemente
@@ -109,6 +101,33 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
         if (valor.month < 10):
             return str(valor.year) + '/' + '0' + str(valor.month)
         return str(valor.year) + '/' + str(valor.month)
+    
+    #Constroi o 
+    #Retorna o DataFrame finalizado
+    @reactive.calc
+    def frequencia_microrganismos_plot():
+        microbiologia_df = microbiologia_reactive().copy()
+        microbiologia_df.reset_index(drop=True, inplace=True)
+
+        #Retira as colunas de filtro
+        microbiologia_df = microbiologia_df[["infec_coleta_data", "pathogen_type_name"]]
+
+        microbiologia_df['infec_coleta_data'] = microbiologia_df['infec_coleta_data'].apply(data_to_string)
+        microbiologia_df = microbiologia_df.groupby(["pathogen_type_name", "infec_coleta_data"]).size().reset_index(name="Casos")
+
+        return microbiologia_df
+    
+    @render_widget
+    def grafico_frequencia_microrganismo():
+        frequencia_plot = px.line(frequencia_microrganismos_plot(), x="infec_coleta_data", y="Casos", color='pathogen_type_name')
+        return frequencia_plot
+
+
+    #Download do DataFrame dos microrganismos
+    #Chama a função reativa que cria a tabela final
+    @render.download(filename=lambda: f"frequencia-micorganismo-{datetime.datetime.now()}.csv")
+    async def download_tabela_frequencia_microrganismo():
+        yield frequencia_microrganismos().to_csv(index=None, sep=';')
 
 
     @reactive.calc
@@ -139,3 +158,33 @@ def microbiologia_server(input: Inputs, output: Outputs, session: Session, micro
     def grafico_microrganismos_resistentes():
         resistentes_plot = px.bar(frequencia_resistentes(), x="infec_coleta_data", y=["resistente", "sensiveis"])
         return resistentes_plot  
+
+    @reactive.calc
+    def num_pacientes_microbiologia():
+        microbiologia = microbiologia_reactive().copy().reset_index()
+        microbiologia = microbiologia['id_paciente'].drop_duplicates().count()
+        return microbiologia
+    
+    @reactive.calc
+    def num_hospitais_microbiologia():
+        microbiologia = microbiologia_reactive().copy().reset_index()
+        microbiologia = microbiologia['hospital_code'].drop_duplicates().count()
+        return microbiologia
+
+    @reactive.calc
+    def num_microrganismos_microbiologia():
+        microbiologia = microbiologia_reactive().copy()
+        microbiologia = microbiologia['infec_coleta_data'].count()
+        return microbiologia
+    
+    @render.text
+    def display_num_pacientes_microbiologia():
+        return f"{num_pacientes_microbiologia()}" 
+    
+    @render.text
+    def display_num_microrganismos_microbiologia():
+        return f"{num_microrganismos_microbiologia()}" 
+    
+    @render.text
+    def display_num_hospitais_microbiologia():
+        return f"{num_hospitais_microbiologia()}" 

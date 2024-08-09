@@ -40,7 +40,7 @@ app_ui = ui.page_navbar(
         ui.nav_panel("Antibióticos", antimicrobiano_ui.antimicrobiano_ui('antimicrobiano')),  
         ui.nav_panel("Hospitais", hospitais_ui.hospitais_ui('hospitais')),  
         ui.nav_panel("Dispositivos", dispositivos_ui.dispositivos_ui('dispositivos')),  
-        title="Impacto MR",  
+        title="Incept",  
         id="page",  
     )  
 

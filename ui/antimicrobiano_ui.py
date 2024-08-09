@@ -5,6 +5,5 @@ def antimicrobiano_ui():
 
     return ui.card(      
 
-        ui.output_data_frame("tabela_atbs"),
         ui.output_data_frame("tabela_atbs_descritiva")
     )
